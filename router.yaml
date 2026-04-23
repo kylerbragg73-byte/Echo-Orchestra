@@ -1,0 +1,93 @@
+# Echo-Orchestra LiteLLM proxy configuration
+# Model IDs here are the real strings accepted by LiteLLM as of April 2026.
+# Update monthly via self_upgrade engine.
+
+model_list:
+  # Cheap
+  - model_name: "cheap-coder"
+    litellm_params:
+      model: "deepseek/deepseek-chat"
+      api_key: "os.environ/DEEPSEEK_API_KEY"
+      rpm: 100
+      tpm: 100000
+
+  - model_name: "cheap-local"
+    litellm_params:
+      model: "ollama/llama4:scout"
+      api_base: "http://localhost:11434"
+      rpm: 50
+      tpm: 50000
+
+  # Standard
+  - model_name: "standard-reasoning"
+    litellm_params:
+      model: "xai/grok-4-latest"
+      api_key: "os.environ/XAI_API_KEY"
+      rpm: 50
+      tpm: 50000
+
+  - model_name: "standard-long-context"
+    litellm_params:
+      model: "moonshot/moonshot-v1-128k"
+      api_key: "os.environ/MOONSHOT_API_KEY"
+      rpm: 50
+      tpm: 100000
+
+  # Premium
+  - model_name: "premium-code"
+    litellm_params:
+      model: "anthropic/claude-opus-4-7"
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+      rpm: 20
+      tpm: 20000
+
+  - model_name: "premium-code-fallback"
+    litellm_params:
+      model: "anthropic/claude-opus-4-6"
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+      rpm: 20
+      tpm: 20000
+
+  - model_name: "premium-multimodal"
+    litellm_params:
+      model: "gemini/gemini-3.1-pro"
+      api_key: "os.environ/GEMINI_API_KEY"
+      rpm: 20
+      tpm: 20000
+
+  - model_name: "premium-balanced"
+    litellm_params:
+      model: "openai/gpt-5.4"
+      api_key: "os.environ/OPENAI_API_KEY"
+      rpm: 20
+      tpm: 20000
+
+  # Research
+  - model_name: "research"
+    litellm_params:
+      model: "perplexity/sonar-pro"
+      api_key: "os.environ/PERPLEXITY_API_KEY"
+      rpm: 30
+      tpm: 30000
+
+router_settings:
+  routing_strategy: "simple-shuffle"
+  model_group_alias:
+    "code-generation": "premium-code"
+    "image-generation": "premium-multimodal"
+    "video-generation": "premium-multimodal"
+    "market-research": "research"
+    "data-processing": "cheap-coder"
+    "qa-testing": "cheap-local"
+    "content-writing": "cheap-coder"
+
+# Fallbacks: if the primary fails (rate limit, outage), try the next
+fallbacks:
+  - premium-code: ["premium-code-fallback", "premium-balanced", "standard-reasoning"]
+  - premium-multimodal: ["premium-balanced"]
+  - cheap-coder: ["cheap-local"]
+  - standard-reasoning: ["premium-balanced"]
+
+# Per-group daily budget caps (USD)
+general_settings:
+  max_budget: 65.00

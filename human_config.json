@@ -1,0 +1,41 @@
+{
+  "human_name": "Owner",
+  "business_entity": "Single-Member LLC",
+  "tax_rate": 0.30,
+  "payout_schedule": {
+    "frequency": "weekly",
+    "day": "friday",
+    "time": "17:00"
+  },
+  "allocation": {
+    "tax_reserve": 0.30,
+    "business_reserve": 0.20,
+    "human_dividend": 0.50
+  },
+  "obligations": [],
+  "bank_account": {
+    "account_number": "",
+    "routing_number": "",
+    "bank_name": ""
+  },
+  "crypto_wallet": {
+    "usdc_solana": "",
+    "btc_lightning": ""
+  },
+  "self_upgrade": {
+    "enabled": true,
+    "auto_apply_risk": "low",
+    "max_single_upgrade_pct_of_reserve": 0.10,
+    "max_monthly_upgrade_pct_of_reserve": 0.30,
+    "human_approval_required_above_usd": 25.00,
+    "scan_frequency": "weekly"
+  },
+  "loops_enabled": {
+    "digital_product_loop": true,
+    "content_loop": true,
+    "saas_loop": true,
+    "human_centered_loop": true,
+    "game_loop": false,
+    "movie_loop": false
+  }
+}

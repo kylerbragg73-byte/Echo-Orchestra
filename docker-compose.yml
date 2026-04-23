@@ -1,0 +1,67 @@
+version: "3.9"
+
+# Echo-Orchestra optional docker stack.
+# Not required for PHONE or LITE tier.
+# Required for STANDARD tier to get the LiteLLM proxy + Stripe webhook.
+# WORKSTATION adds Ollama for local models.
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: echo-litellm
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./router/router.yaml:/app/config.yaml:ro
+    env_file:
+      - .env
+    command: ["--config", "/app/config.yaml", "--port", "4000"]
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: echo-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Uncomment on WORKSTATION tier with NVIDIA GPU:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  sqlite-web:
+    # Browse the ledger + tax + upgrade DBs at http://localhost:8088
+    image: coleifer/sqlite-web:latest
+    container_name: echo-sqlite-web
+    restart: unless-stopped
+    ports:
+      - "8088:8080"
+    volumes:
+      - .:/data
+    command: ["sqlite_web", "--host", "0.0.0.0", "--port", "8080",
+              "--read-only", "/data/echo_ledger.db"]
+
+  stripe-webhook:
+    # Echo's own FastAPI webhook handler
+    image: python:3.11-slim
+    container_name: echo-stripe-webhook
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "8787:8787"
+    env_file:
+      - .env
+    command: >
+      bash -c "pip install --no-cache-dir -r requirements.txt
+      && uvicorn ledger.stripe_webhook:app --host 0.0.0.0 --port 8787"
+
+volumes:
+  ollama_data:
